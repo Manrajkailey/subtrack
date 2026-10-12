@@ -32,6 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($old['name'] === '') {
         $errors[] = 'Name is required.';
+    } elseif (!preg_match('/^[\p{L}]+(?: [\p{L}]+)*$/u', $old['name'])) {
+        $errors[] = 'Name can contain letters and spaces only.';
+    }
+    if ($old['phone'] !== null && !preg_match('/^[0-9]{1,10}$/', $old['phone'])) {
+        $errors[] = 'Phone must contain digits only, up to 10 digits.';
     }
     if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'A valid email is required.';
@@ -68,7 +73,9 @@ require __DIR__ . '/partials/app_header.php';
         <?= csrfField() ?>
         <div class="field">
             <label for="name">Customer name</label>
-            <input type="text" id="name" name="name" value="<?= e($old['name']) ?>" required>
+            <input type="text" id="name" name="name" value="<?= e($old['name']) ?>" required
+                   pattern="[A-Za-zÀ-ɏ]+( [A-Za-zÀ-ɏ]+)*" title="Letters and spaces only"
+                   oninput="this.value = this.value.replace(/[^\p{L} ]/gu, '')">
         </div>
         <div class="field">
             <label for="email">Email</label>
@@ -76,7 +83,9 @@ require __DIR__ . '/partials/app_header.php';
         </div>
         <div class="field">
             <label for="phone">Phone (optional)</label>
-            <input type="text" id="phone" name="phone" value="<?= e($old['phone'] ?? '') ?>">
+            <input type="text" id="phone" name="phone" value="<?= e($old['phone'] ?? '') ?>"
+                   maxlength="10" inputmode="numeric" pattern="[0-9]{1,10}" title="Digits only, up to 10"
+                   oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10)">
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-primary"><?= $editing ? 'Save changes' : 'Add customer' ?></button>
